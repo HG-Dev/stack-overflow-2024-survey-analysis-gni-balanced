@@ -123,15 +123,20 @@ ai_threat_remapping = {
 It is a well-known fact that developer jobs pay best in the United States of America; the correlation between one's nationality and their salary is not interesting for the purposes of this regression analysis. To identify "highly paid" developers as opposed to "poorly paid" developers, I propose that the target variable be five classifiers identifying developer salary as a percentage of their country or currency's GNI (gross national income) per capita, basically comparing their salary to the average salary in the same currency or country.
 
 This requires first that their currency be converted into USD using the exchange rate in 2024. 
-Libraries such as `pyxrate` and `forex-python` provided access to public, free APIs that can perform currency conversions, even historical conversions-- but that doesn't work on my company computer apparently, so I had to download another CSV file to accomplish this.
+Libraries such as `pyxrate` and `forex-python` provided access to public, free APIs that can perform currency conversions, even historical conversions-- but such API-accessing libraries tend to fail when the API is broken, nor do they work on my company computer. Thus, I had to gather exchange rates into USD, specifically 2024 averages, from exchange-rates.org and save them in a CSV file.
 
-The final range in steps of 20% is as follows:
-```
--2: 70% or less of GNI per capita (poorly paying job)
--1: >70% to 90% of GNI per capita (mediocre pay)
- 0: >90% to <110% of GNI per capita (average in comparison to all jobs)
- 1: 110% to <130$ of GNI per capita (good paying job)
- 2: 130% or greater of GNI per capita (rolling in the dough)
+Salaries converted into USD are combined with national GNI per capita to produce a scalar indicating the level of income one receives as opposed to the average income people of their country recieve.
+
+The final range doubles for each integer, starting at 0.25 or less = -3, doubling for each integer upwards:
+-3: <= 0.25, -2: <= 0.5, -1: <= 1, 0: <= 2, etc.
+```python
+from math import ceil, log2
+def get_percent_gni_category(p_gni) -> int:
+    # Clamp the value to avoid math domain errors
+    p_gni = max(p_gni, 0.25)
+    value = ceil(log2(p_gni / 0.25)) - 3
+    # Clamp the result to the range [-3, 3]
+    return max(-3, min(3, value))
 ```
 
 Can career category, organization size, and education level be used to predict how well a developer's job pays? Let's find out!
