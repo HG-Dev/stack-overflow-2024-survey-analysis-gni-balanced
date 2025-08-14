@@ -38,12 +38,12 @@ edu_mapping = {
 
 ### Job Descriptions (dev_type)
 TinyTuesday's dataset codifies job descriptions using integer indices pointing to labels, but for the purposes of lasso regression, this could be improperly processed as continuous values.
-I propose reclassifying roles into eight larger categories used with One-Hot Encoding for improved predictions. As an outlier, "blockchain" retains its own category.
+I propose reclassifying roles into eight larger categories used with One-Hot Encoding for improved predictions. As an outlier with few jobs and higher pay, "blockchain" is removed.
 ```python
 devtypes = [
     "NONE",     # No values at zero
     "Academia", # Academic researcher
-    "Blockchain",
+    #"Blockchain",
     "BackEnd",  # Cloud infrastructure engineer
     "DataScienceAndAI",	# Data or business analyst
     "DataScienceAndAI",	# Data engineer
@@ -120,23 +120,15 @@ ai_threat_remapping = {
 ```
 
 ## Target Variable: Salary as percentage of GNI per capita (comp_total + currency)
-It is a well-known fact that developer jobs pay best in the United States of America; the correlation between one's nationality and their salary is not interesting for the purposes of this regression analysis. To identify "highly paid" developers as opposed to "poorly paid" developers, I propose that the target variable be five classifiers identifying developer salary as a percentage of their country or currency's GNI (gross national income) per capita, basically comparing their salary to the average salary in the same currency or country.
+It is a well-known fact that developer jobs pay best in the United States of America; the correlation between one's nationality and their salary is not interesting for the purposes of this regression analysis. To identify "highly paid" developers as opposed to "poorly paid" developers, I propose that the target variable be developer salary as a percentage of their country or currency's GNI (gross national income) per capita, basically comparing their salary to the average salary in the same currency or country.
 
 This requires first that their currency be converted into USD using the exchange rate in 2024. 
 Libraries such as `pyxrate` and `forex-python` provided access to public, free APIs that can perform currency conversions, even historical conversions-- but such API-accessing libraries tend to fail when the API is broken, nor do they work on my company computer. Thus, I had to gather exchange rates into USD, specifically 2024 averages, from exchange-rates.org and save them in a CSV file.
 
-Salaries converted into USD are combined with national GNI per capita to produce a scalar indicating the level of income one receives as opposed to the average income people of their country recieve.
+Salaries converted into USD are combined with national GNI per capita to produce a scalar indicating the level of income one receives as opposed to the average income people of their country recieve:
+`percentage = pay in USD / GNI per capita`
+This scalar was found to range from somewhere above zero (paid very little) to upwards of 40 (paid well relative to others in same country).
 
-The final range doubles for each integer, starting at 0.25 or less = -3, doubling for each integer upwards:
--3: <= 0.25, -2: <= 0.5, -1: <= 1, 0: <= 2, etc.
-```python
-from math import ceil, log2
-def get_percent_gni_category(p_gni) -> int:
-    # Clamp the value to avoid math domain errors
-    p_gni = max(p_gni, 0.25)
-    value = ceil(log2(p_gni / 0.25)) - 3
-    # Clamp the result to the range [-3, 3]
-    return max(-3, min(3, value))
-```
+Country GNI per capita is also included just in case this feature can be shown to correlate with high pay for developers.
 
 Can career category, organization size, and education level be used to predict how well a developer's job pays? Let's find out!

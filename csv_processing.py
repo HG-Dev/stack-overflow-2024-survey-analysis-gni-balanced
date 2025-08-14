@@ -119,7 +119,7 @@ COUNTRY_INCOME_LEVELS = [
 ]
 del gni_df
 
-def get_income_category(country):
+def get_country_income_category(country):
     gni_per_capita = GNI_PER_CAPITA[country]
     for idx in range(len(COUNTRY_INCOME_LEVELS)):
         if gni_per_capita > COUNTRY_INCOME_LEVELS[idx]:
@@ -196,6 +196,7 @@ class CsvDataFramePreprocessor:
             if column in self._touched_columns:
                 self._touched_columns.remove(column)
         print("Removing columns {} from dataframe.".format(columns))
+        # Does this require self._df = self._df.drop()?
         self._df.drop(columns=columns)
 
     def add_column(self, col_name: str, series: Series):
@@ -318,23 +319,19 @@ percent_gni = preprocessor.create_series_from_selection(
     ["country", "comp_usd"],
     lambda row: get_percent_gni(row["country"], row["comp_usd"]))
 
-from math import ceil, log2
-def get_percent_gni_category(p_gni) -> int:
-    # Clamp the value to avoid math domain errors
-    p_gni = max(p_gni, 0.25)
-    value = ceil(log2(p_gni / 0.25)) - 3
-    # Clamp the result to the range [-3, 3]
-    return max(-3, min(3, value))
+# from math import ceil, log2
+# def get_percent_gni_category(p_gni) -> int:
+#     # Clamp the value to avoid math domain errors
+#     p_gni = max(p_gni, 0.25)
+#     value = ceil(log2(p_gni / 0.25)) - 3
+#     # Clamp the result to the range [-3, 3]
+#     return max(-3, min(3, value))
 
 assert(percent_gni.notna().all())
+country_gni = preprocessor.create_series_from_selection("country", GNI_PER_CAPITA.get)
 
 preprocessor.add_column("per_gni", percent_gni)
-preprocessor.add_column("per_gni_category", percent_gni.apply(get_percent_gni_category))
-
-preprocessor.add_column(
-    "gni_class", 
-    preprocessor.create_series_from_selection("country", get_income_category))
-
+preprocessor.add_column("home_gni", country_gni)
 preprocessor.drop_columns(["currency", "comp_total", "comp_usd"])
 preprocessor.drop_untouched_columns()
 
