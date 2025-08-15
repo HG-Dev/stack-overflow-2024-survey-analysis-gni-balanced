@@ -72,7 +72,7 @@ print("Countries used: " + str(df['country'].unique()))
 print("Total blockchain devs out of {}: {}".format(len(df), df['DEVTYPE_Blockchain'].sum()))
 df = df[~df['DEVTYPE_Blockchain']]
 print("Final count: {}".format(len(df)))
-df = df.drop(columns=["country", "DEVTYPE_Blockchain", "home_gni"])
+df = df.drop(columns=["country", "DEVTYPE_Blockchain", "home_gni", "comp_usd"])
 app = App(df, "per_gni")
 
 pipeline = app.create_lasso_regression_pipeline()

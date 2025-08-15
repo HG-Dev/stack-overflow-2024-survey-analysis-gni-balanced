@@ -53,7 +53,7 @@ devtypes = [
     "DevSupport",	# Developer Experience
     "DevSupport",	# Developer Advocate
     "DataScienceAndAI",	# Developer, AI
-    "Backend",	# Developer, back-end
+    "BackEnd",	# Developer, back-end
     "Native",	# Developer, desktop or enterprise applications
     "Native",	# Developer, embedded applications or devices
     "FullStack",	# Developer, full-stack
@@ -130,5 +130,7 @@ Salaries converted into USD are combined with national GNI per capita to produce
 This scalar was found to range from somewhere above zero (paid very little) to upwards of 40 (paid well relative to others in same country).
 
 Country GNI per capita is also included just in case this feature can be shown to correlate with high pay for developers.
+
+Absurd percentages less than 1% or greater than 4000% than GNI per capita are filtered out.
 
 Can career category, organization size, and education level be used to predict how well a developer's job pays? Let's find out!

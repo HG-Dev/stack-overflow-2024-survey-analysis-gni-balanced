@@ -38,7 +38,7 @@ DEVTYPES = [
     "DevSupport",	# Developer Experience
     "DevSupport",	# Developer Advocate
     "DataScienceAndAI",	# Developer, AI
-    "Backend",	# Developer, back-end
+    "BackEnd",	# Developer, back-end
     "Native",	# Developer, desktop or enterprise applications
     "Native",	# Developer, embedded applications or devices
     "FullStack",	# Developer, full-stack
@@ -261,6 +261,9 @@ class CsvDataFramePreprocessor:
     def export_unique_values(self, col_name: str, modifier: Callable[[str], str] = lambda x: x):
         self._df[col_name].dropna().apply(modifier).unique().tofile(col_name + ".txt", "\n")
 
+    def export_description(self, columns: List[str]):
+        self._df[columns].describe().to_csv('+'.join(columns) + ".csv")
+
     @staticmethod
     def clean_pascal(value):
         if not value or pd.isna(value):
@@ -331,8 +334,11 @@ assert(percent_gni.notna().all())
 country_gni = preprocessor.create_series_from_selection("country", GNI_PER_CAPITA.get)
 
 preprocessor.add_column("per_gni", percent_gni)
+# Filter out 'interns' and 'gods'
+# The average USA CEO salary is around 800,000 while the GNI per capita is about 80,000
+preprocessor.filter_predicate("per_gni", lambda percentage: percentage > 0.1 and percentage < 10)
 preprocessor.add_column("home_gni", country_gni)
-preprocessor.drop_columns(["currency", "comp_total", "comp_usd"])
+preprocessor.drop_columns(["currency", "comp_total"])
 preprocessor.drop_untouched_columns()
-
+preprocessor.export_description(['per_gni', 'comp_usd'])
 preprocessor.save()
