@@ -122,7 +122,13 @@ class App:
 
         if view_plt:
             plt.figure(figsize=(8, 6))
-            plt.scatter(principal_component_1, principal_component_2, c=cluster_assignments, cmap='viridis', s=50)
+            scatter = plt.scatter(
+                principal_component_1, 
+                principal_component_2, 
+                c=cluster_assignments, 
+                cmap='viridis',
+                s=50)
+            plt.legend(*scatter.legend_elements(), loc="lower left", title="Clusters")
             plt.xlabel('Canonical Variable 1')
             plt.ylabel('Canonical Variable 2')
             plt.title(f'PCA Scatterplot for {model.n_clusters} Clusters')
@@ -150,7 +156,7 @@ seed = 1001
 app = App(df, ["ai_sent", "comp_usd"], test_size=0.01, seed=seed)
 
 cluster_model = app.create_optimal_kmeans_cluster_model(3, 12)
-canx, cany = app.get_cluster_canonical_variables(cluster_model)
+canx, cany = app.get_cluster_canonical_variables(cluster_model, True)
 results = pd.DataFrame(app.model_set.for_training, columns=app.feature_names)
 # Validate using ai_sent
 print("Adding target columns:\n" + str(app.target_set.for_training))
